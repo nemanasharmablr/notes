@@ -31,6 +31,56 @@ For a developer, think of SoMove as **Visual Studio for Hardware**. It replaces 
 
 ---
 
+To understand Drive Control Block (DCB) and the Power Block, think of a Variable Speed Drive as a computer with a high-voltage power output. For a .NET developer, this is essentially the "Backend Logic" vs. the "Hardware Infrastructure."
+
+1. The Power Block (The Infrastructure)
+The Power Block is the physical hardware that handles the conversion of electricity. In software terms, this is your Hardware Layer or the Execution Environment.
+
+How it works: It takes incoming AC power, converts it to DC (the DC Bus), and then "chops" it back into a simulated AC wave using IGBTs (Insulated Gate Bipolar Transistors) to spin the motor.
+
+The Developer Analogy: Think of the Power Block as the CLR (Common Language Runtime). It’s the engine that actually executes the instructions and manages the "memory" (current/voltage). You don't usually code the CLR, but your code is limited by what the CLR can handle.
+
+2. Drive Control Block (DCB) Logic (The Code)
+DCB is the "Application Layer" inside the drive. It allows you to write custom logic that runs locally on the drive’s processor, independent of an external PLC (Programmable Logic Controller).
+
+The Concept: Instead of just responding to a "Start" command, the drive can make decisions.
+
+The Logic: It uses Function Block Diagram (FBD) logic. For a .NET developer, this is like Reactive Programming or LINQ. Data flows from an Input (a sensor), through a Logic Gate (an AND, OR, or Timer), to an Output (turning the motor or a relay).
+
+Example Use Case: A "Pump Jam" logic.
+
+Logic: IF (Motor Torque > 90%) AND (Speed < 10Hz) FOR (5 seconds) THEN (Reverse Motor for 2 seconds).
+
+This prevents the need for a central server (PLC) to constantly monitor the pump; the drive "handles its own exceptions."
+
+3. How SoMove Utilizes Both
+SoMove acts as your IDE (Integrated Development Environment), similar to Visual Studio, to bridge the gap between your logic and the power hardware.
+
+For the Power Block:
+
+Configuration: You use SoMove to set the "Hardware Constraints." You define the maximum current (I 
+max
+​	
+ ) the Power Block is allowed to output to prevent it from "crashing" (tripping).
+
+Thermal Monitoring: SoMove gives you a "Diagnostic" view of the Power Block’s temperature. If the IGBTs get too hot, SoMove shows you the thermal state, much like monitoring CPU/RAM usage in a profiler.
+
+For the DCB Logic:
+
+Graphical Programming: Schneider provides a "Logic Builder" tab within SoMove (for supported drives like the ATV340 or ATV900). You don't write C#; you drag and drop blocks and "wire" them together.
+
+Compilation & Deployment: Once you’ve built your logic, you click Write to Device. This is your Deployment/Build step. The logic is compiled into a format the drive's microprocessor understands and is stored in non-volatile memory.
+
+Live Debugging: While the motor is running, SoMove highlights the "wires" in the logic diagram. If a line is Green, that boolean value is True. If Black, it's False. This is exactly like Runtime Breakpoints or Data Tips in Visual Studio.
+
+Summary Comparison
+Concept	.NET Equivalent	SoMove's Role
+Power Block	Server Hardware / CLR	Resource monitoring and safety limits.
+DCB Logic	Middleware / Business Logic	The IDE where you write and "debug" the flow.
+Parameters	appsettings.json	The key-value pairs that define behavior.
+Inputs/Outputs	API Endpoints / Events	The "triggers" for your logic to execute.
+
+
 ## 4. The Commissioning Process (The "Deployment" Pipeline)
 
 ### Phase 1: Offline Configuration (Coding)
